@@ -1,0 +1,565 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export type AppRole = "visitor" | "creator";
+export type FeedPostType = "image" | "video" | "poll" | "text";
+export type NotificationType =
+  | "new_follower"
+  | "new_subscriber"
+  | "new_message"
+  | "post_like"
+  | "post_comment";
+
+export type Database = {
+  public: {
+    Tables: {
+      profile_follows: {
+        Row: {
+          follower_id: string;
+          followed_id: string;
+          created_at: string;
+        };
+        Insert: {
+          follower_id: string;
+          followed_id: string;
+          created_at?: string;
+        };
+        Update: {
+          follower_id?: string;
+          followed_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      creator_subscriptions: {
+        Row: {
+          subscriber_id: string;
+          creator_id: string;
+          created_at: string;
+        };
+        Insert: {
+          subscriber_id: string;
+          creator_id: string;
+          created_at?: string;
+        };
+        Update: {
+          subscriber_id?: string;
+          creator_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      direct_threads: {
+        Row: {
+          id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      direct_thread_members: {
+        Row: {
+          thread_id: string;
+          user_id: string;
+          created_at: string;
+          last_read_at: string;
+          last_message_at: string;
+          unread_count: number;
+        };
+        Insert: {
+          thread_id: string;
+          user_id: string;
+          created_at?: string;
+          last_read_at?: string;
+          last_message_at?: string;
+          unread_count?: number;
+        };
+        Update: {
+          thread_id?: string;
+          user_id?: string;
+          created_at?: string;
+          last_read_at?: string;
+          last_message_at?: string;
+          unread_count?: number;
+        };
+        Relationships: [];
+      };
+      direct_messages: {
+        Row: {
+          id: string;
+          thread_id: string;
+          sender_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          thread_id: string;
+          sender_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          thread_id?: string;
+          sender_id?: string;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          recipient_id: string;
+          actor_id: string | null;
+          type: NotificationType;
+          title: string;
+          body: string;
+          link: string | null;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recipient_id: string;
+          actor_id?: string | null;
+          type: NotificationType;
+          title: string;
+          body: string;
+          link?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          recipient_id?: string;
+          actor_id?: string | null;
+          type?: NotificationType;
+          title?: string;
+          body?: string;
+          link?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      posts: {
+        Row: {
+          id: string;
+          author_id: string;
+          post_type: FeedPostType;
+          title: string | null;
+          body: string | null;
+          media_url: string | null;
+          caption: string | null;
+          is_published: boolean;
+          is_pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          author_id: string;
+          post_type?: FeedPostType;
+          title?: string | null;
+          body?: string | null;
+          media_url?: string | null;
+          caption?: string | null;
+          is_published?: boolean;
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          author_id?: string;
+          post_type?: FeedPostType;
+          title?: string | null;
+          body?: string | null;
+          media_url?: string | null;
+          caption?: string | null;
+          is_published?: boolean;
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      post_comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          author_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          author_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          author_id?: string;
+          body?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      post_poll_options: {
+        Row: {
+          id: string;
+          post_id: string;
+          label: string;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          label: string;
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          label?: string;
+          position?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      post_poll_votes: {
+        Row: {
+          id: string;
+          post_id: string;
+          option_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          option_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          option_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      post_reactions: {
+        Row: {
+          id: string;
+          post_id: string;
+          user_id: string;
+          reaction_type: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          user_id: string;
+          reaction_type?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          user_id?: string;
+          reaction_type?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      post_bookmarks: {
+        Row: {
+          post_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          post_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          post_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      creator_profiles: {
+        Row: {
+          id: string;
+          slug: string;
+          headline: string | null;
+          about: string | null;
+          featured_quote: string | null;
+          is_published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          slug: string;
+          headline?: string | null;
+          about?: string | null;
+          featured_quote?: string | null;
+          is_published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          headline?: string | null;
+          about?: string | null;
+          featured_quote?: string | null;
+          is_published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string;
+          role: AppRole;
+          bio: string | null;
+          username: string | null;
+          avatar_url: string | null;
+          website: string | null;
+          location: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          full_name: string;
+          role: AppRole;
+          bio?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          website?: string | null;
+          location?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          full_name?: string;
+          role?: AppRole;
+          bio?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          website?: string | null;
+          location?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+    };
+    Views: {
+      public_creator_profiles: {
+        Row: {
+          id: string | null;
+          slug: string | null;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+          website: string | null;
+          location: string | null;
+          headline: string | null;
+          about: string | null;
+          featured_quote: string | null;
+        };
+      };
+      public_member_profiles: {
+        Row: {
+          id: string | null;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+          website: string | null;
+          location: string | null;
+          role: AppRole | null;
+          creator_slug: string | null;
+          headline: string | null;
+          about: string | null;
+          featured_quote: string | null;
+          follower_count: number | null;
+          following_count: number | null;
+          subscriber_count: number | null;
+          post_count: number | null;
+        };
+      };
+      feed_posts: {
+        Row: {
+          id: string | null;
+          author_id: string | null;
+          post_type: FeedPostType | null;
+          title: string | null;
+          body: string | null;
+          media_url: string | null;
+          is_published: boolean | null;
+          is_pinned: boolean | null;
+          created_at: string | null;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+          creator_slug: string | null;
+          headline: string | null;
+        };
+      };
+      post_engagement_stats: {
+        Row: {
+          post_id: string | null;
+          like_count: number | null;
+          comment_count: number | null;
+        };
+      };
+      poll_option_results: {
+        Row: {
+          option_id: string | null;
+          post_id: string | null;
+          label: string | null;
+          position: number | null;
+          vote_count: number | null;
+        };
+      };
+      comment_threads: {
+        Row: {
+          id: string | null;
+          post_id: string | null;
+          body: string | null;
+          created_at: string | null;
+          author_id: string | null;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+        };
+      };
+      direct_thread_previews: {
+        Row: {
+          thread_id: string | null;
+          peer_id: string | null;
+          peer_full_name: string | null;
+          peer_username: string | null;
+          peer_avatar_url: string | null;
+          peer_role: AppRole | null;
+          last_message_body: string | null;
+          last_message_created_at: string | null;
+          unread_count: number | null;
+          message_count: number | null;
+        };
+      };
+      direct_message_entries: {
+        Row: {
+          id: string | null;
+          thread_id: string | null;
+          sender_id: string | null;
+          body: string | null;
+          created_at: string | null;
+          full_name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+        };
+      };
+      notification_items: {
+        Row: {
+          id: string | null;
+          recipient_id: string | null;
+          actor_id: string | null;
+          type: NotificationType | null;
+          title: string | null;
+          body: string | null;
+          link: string | null;
+          is_read: boolean | null;
+          created_at: string | null;
+          actor_full_name: string | null;
+          actor_username: string | null;
+          actor_avatar_url: string | null;
+        };
+      };
+    };
+    Functions: {
+      open_direct_thread: {
+        Args: {
+          peer_id: string;
+        };
+        Returns: string;
+      };
+      mark_thread_read: {
+        Args: {
+          target_thread_id: string;
+        };
+        Returns: undefined;
+      };
+      mark_notification_read: {
+        Args: {
+          target_notification_id: string;
+        };
+        Returns: undefined;
+      };
+      mark_all_notifications_read: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+    };
+    Enums: {
+      app_role: AppRole;
+      feed_post_type: FeedPostType;
+      notification_type: NotificationType;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};
