@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../providers/AuthProvider";
 import logo from "../../public/logo/logo.png";
@@ -10,11 +10,30 @@ const marketingAnchorLinks = [
 
 export const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [isLandingScrolled, setLandingScrolled] = useState(false);
   const { status, profile, signOut, user } = useAuth();
   const location = useLocation();
   const homeTarget = status === "authenticated" ? "/feed" : "/";
   const isAuthed = status === "authenticated";
   const isLanding = !isAuthed && location.pathname === "/";
+
+  useEffect(() => {
+    if (!isLanding) {
+      setLandingScrolled(false);
+      return undefined;
+    }
+
+    const handleScroll = () => {
+      setLandingScrolled(window.scrollY > 18);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isLanding]);
 
   const initials = profile?.full_name
     ? profile.full_name
@@ -29,6 +48,8 @@ export const Header = () => {
     <header
       className={`site-header${isAuthed ? " site-header--authed" : ""}${
         isLanding ? " site-header--landing" : ""
+      }${
+        isLanding && isLandingScrolled ? " site-header--landing-scrolled" : ""
       }`}
     >
       <div className="site-header__surface">
