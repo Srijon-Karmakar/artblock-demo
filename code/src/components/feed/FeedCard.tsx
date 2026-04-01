@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { addComment, renderFormattedText, togglePostLike, togglePostSave, voteOnPoll } from "../../lib/profile";
 import type { FeedPost } from "../../types/auth";
@@ -10,12 +10,57 @@ type FeedCardProps = {
   extraActions?: ReactNode;
 };
 
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(new Date(value));
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  if (diffHours < 1) {
+    const mins = Math.floor(diffMs / (1000 * 60));
+    return mins <= 0 ? "just now" : `${mins}m`;
+  }
+  if (diffHours < 24) return `${Math.floor(diffHours)}h`;
+  if (diffHours < 24 * 7) return `${Math.floor(diffHours / 24)}d`;
+
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
+};
+
+const HeartIcon = ({ filled }: { filled: boolean }) => (
+  <svg aria-hidden="true" fill={filled ? "currentColor" : "none"} height="20" viewBox="0 0 24 24" width="20">
+    <path
+      d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={filled ? "0" : "2"}
+    />
+  </svg>
+);
+
+const BookmarkIcon = ({ filled }: { filled: boolean }) => (
+  <svg aria-hidden="true" fill={filled ? "currentColor" : "none"} height="20" viewBox="0 0 24 24" width="20">
+    <path
+      d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={filled ? "0" : "2"}
+    />
+  </svg>
+);
+
+const CommentIcon = () => (
+  <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20">
+    <path
+      d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+    />
+  </svg>
+);
 
 export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardProps) => {
   const [isCommentsOpen, setCommentsOpen] = useState(false);
@@ -38,12 +83,7 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
     setError(null);
     const result = await togglePostLike(post.id, viewerId, post.liked_by_viewer);
     setMutating(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
+    if (result.error) { setError(result.error); return; }
     await onRefresh();
   };
 
@@ -52,12 +92,7 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
     setError(null);
     const result = await voteOnPoll(post.id, optionId, viewerId);
     setMutating(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
+    if (result.error) { setError(result.error); return; }
     await onRefresh();
   };
 
@@ -66,40 +101,26 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
     setError(null);
     const result = await togglePostSave(post.id, viewerId, post.saved_by_viewer);
     setMutating(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
+    if (result.error) { setError(result.error); return; }
     await onRefresh();
   };
 
-  const handleCommentSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleCommentSubmit = async (event: { preventDefault(): void }) => {
     event.preventDefault();
     const trimmed = commentDraft.trim();
-
-    if (!trimmed) {
-      setError("Comment cannot be empty.");
-      return;
-    }
-
+    if (!trimmed) { setError("Comment cannot be empty."); return; }
     setMutating(true);
     setError(null);
     const result = await addComment(post.id, viewerId, trimmed);
     setMutating(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-
+    if (result.error) { setError(result.error); return; }
     setCommentDraft("");
     await onRefresh();
   };
 
   return (
     <article className="feed-card">
+      {/* Header: avatar + author info + profile link */}
       <header className="feed-card__header">
         <Link className="feed-card__identity feed-card__identity--link" to={`/profiles/${post.author_id}`}>
           {post.avatar_url ? (
@@ -107,18 +128,23 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
           ) : (
             <div className="feed-card__avatar feed-card__avatar--fallback">{initials}</div>
           )}
-
           <div>
-            <strong>{post.full_name}</strong>
-            <p>{post.username ? `@${post.username}` : "creator"} | {formatDate(post.created_at)}</p>
+            <strong className="feed-card__name">{post.full_name}</strong>
+            <p className="feed-card__meta">
+              {post.username ? `@${post.username}` : "creator"} · {formatDate(post.created_at)}
+            </p>
           </div>
         </Link>
 
-        <Link className="ghost-button" to={`/profiles/${post.author_id}`}>
-          Profile
-        </Link>
+        <div className="feed-card__header-right">
+          {post.is_pinned ? <span className="feed-card__pin-badge">Pinned</span> : null}
+          <Link className="feed-card__follow-btn" to={`/profiles/${post.author_id}`}>
+            View
+          </Link>
+        </div>
       </header>
 
+      {/* Media / Content */}
       <div className="feed-card__content">
         {post.post_type === "image" && post.media_url ? (
           <img alt={post.body ?? `${post.full_name} post`} className="feed-card__media" src={post.media_url} />
@@ -143,10 +169,9 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
               {post.poll_options.map((option) => {
                 const voteShare = totalVotes > 0 ? Math.round((option.vote_count / totalVotes) * 100) : 0;
                 const isVoted = post.voted_option_id === option.option_id;
-
                 return (
                   <button
-                    className={`poll-option-button ${isVoted ? "poll-option-button--active" : ""}`}
+                    className={`poll-option-button${isVoted ? " poll-option-button--active" : ""}`}
                     disabled={isMutating}
                     key={option.option_id}
                     onClick={() => void handleVote(option.option_id)}
@@ -154,63 +179,97 @@ export const FeedCard = ({ post, viewerId, onRefresh, extraActions }: FeedCardPr
                   >
                     <span>{option.label}</span>
                     {canRevealPollResults ? (
-                      <strong>{option.vote_count} votes | {voteShare}%</strong>
+                      <span className="poll-option-button__result">
+                        <strong>{voteShare}%</strong>
+                        <span>{option.vote_count}</span>
+                      </span>
                     ) : (
-                      <strong>Tap to vote</strong>
+                      <span className="poll-option-button__cta">Tap to vote</span>
                     )}
                   </button>
                 );
               })}
             </div>
+            {totalVotes > 0 ? (
+              <p className="feed-poll-card__total">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</p>
+            ) : null}
           </div>
         ) : null}
       </div>
 
-      <div className="feed-card__body">
-        <div className="feed-card__meta-row">
-          {post.headline ? <span className="section-heading__eyebrow">{post.headline}</span> : null}
-          {post.is_pinned ? <span className="feed-card__pin-badge">Pinned</span> : null}
+      {/* Caption / body for media posts */}
+      {(post.post_type === "image" || post.post_type === "video") && post.body ? (
+        <div className="feed-card__caption">
+          {post.headline ? <span className="feed-card__headline">{post.headline}</span> : null}
+          <p>{post.body}</p>
         </div>
-        {(post.post_type === "image" || post.post_type === "video") && post.body ? <p>{post.body}</p> : null}
-        {error ? <div className="auth-message auth-message--error">{error}</div> : null}
-      </div>
+      ) : null}
 
+      {error ? <div className="auth-message auth-message--error feed-card__error">{error}</div> : null}
+
+      {/* Icon action bar */}
       <div className="feed-card__actions">
-        <button className="ghost-button" disabled={isMutating} onClick={() => void handleLike()} type="button">
-          {post.liked_by_viewer ? "Unlike" : "Like"} | {post.like_count}
-        </button>
-        <button className="ghost-button" disabled={isMutating} onClick={() => void handleSave()} type="button">
-          {post.saved_by_viewer ? "Saved" : "Save"}
-        </button>
-        <button className="ghost-button" onClick={() => setCommentsOpen((current) => !current)} type="button">
-          Comments | {post.comment_count}
-        </button>
-        {extraActions}
+        <div className="feed-card__actions-left">
+          <button
+            aria-label={post.liked_by_viewer ? "Unlike" : "Like"}
+            className={`icon-action${post.liked_by_viewer ? " icon-action--liked" : ""}`}
+            disabled={isMutating}
+            onClick={() => void handleLike()}
+            type="button"
+          >
+            <HeartIcon filled={post.liked_by_viewer} />
+            {post.like_count > 0 ? <span>{post.like_count}</span> : null}
+          </button>
+
+          <button
+            aria-label="Toggle comments"
+            className="icon-action"
+            onClick={() => setCommentsOpen((c) => !c)}
+            type="button"
+          >
+            <CommentIcon />
+            {post.comment_count > 0 ? <span>{post.comment_count}</span> : null}
+          </button>
+        </div>
+
+        <div className="feed-card__actions-right">
+          {extraActions}
+          <button
+            aria-label={post.saved_by_viewer ? "Unsave" : "Save"}
+            className={`icon-action${post.saved_by_viewer ? " icon-action--saved" : ""}`}
+            disabled={isMutating}
+            onClick={() => void handleSave()}
+            type="button"
+          >
+            <BookmarkIcon filled={post.saved_by_viewer} />
+          </button>
+        </div>
       </div>
 
+      {/* Comments section */}
       {isCommentsOpen ? (
         <div className="feed-comments">
           <form className="feed-comments__composer" onSubmit={handleCommentSubmit}>
             <textarea
               onChange={(event) => setCommentDraft(event.target.value)}
-              placeholder="Write a comment"
-              rows={3}
+              placeholder="Add a comment…"
+              rows={2}
               value={commentDraft}
             />
-            <button className="solid-button" disabled={isMutating} type="submit">
-              Comment
+            <button className="solid-button" disabled={isMutating || !commentDraft.trim()} type="submit">
+              Post
             </button>
           </form>
 
           <div className="feed-comments__list">
-            {post.comments.length === 0 ? <p>No comments yet.</p> : null}
+            {post.comments.length === 0 ? (
+              <p className="feed-comments__empty">No comments yet. Be the first!</p>
+            ) : null}
             {post.comments.map((comment) => (
               <article className="feed-comment" key={comment.id}>
-                <strong>
-                  <Link to={`/profiles/${comment.author_id}`}>
-                    {comment.username ? `@${comment.username}` : comment.full_name}
-                  </Link>
-                </strong>
+                <Link className="feed-comment__author" to={`/profiles/${comment.author_id}`}>
+                  {comment.username ? `@${comment.username}` : comment.full_name}
+                </Link>
                 <p>{comment.body}</p>
               </article>
             ))}

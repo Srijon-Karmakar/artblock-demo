@@ -6,18 +6,6 @@ import { fetchFeedPosts, type FeedScope } from "../lib/profile";
 import { useAuth } from "../providers/AuthProvider";
 import type { FeedPost } from "../types/auth";
 
-const creatorShortcuts = [
-  "Post image or video updates directly from the feed",
-  "Drop polls between media posts to increase engagement",
-  "Keep long-form thoughts in formatted text posts"
-];
-
-const visitorShortcuts = [
-  "Discover creator content from one scrolling feed",
-  "Like, comment, and vote without leaving the stream",
-  "Move into creator profiles when something stands out"
-];
-
 const feedTabs: { label: string; value: FeedScope }[] = [
   { label: "For You", value: "for-you" },
   { label: "Following", value: "following" },
@@ -47,46 +35,29 @@ export const FeedPage = () => {
     page?: number;
     append?: boolean;
   } = {}) => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
+    if (append) setLoadingMore(true);
+    else setLoading(true);
 
-    if (!append) {
-      setError(null);
-    }
+    if (!append) setError(null);
 
     const result = await fetchFeedPosts(user.id, scope, {
       page: nextPage,
       pageSize: FEED_PAGE_SIZE
     });
 
-    if (append) {
-      setLoadingMore(false);
-    } else {
-      setLoading(false);
-    }
+    if (append) setLoadingMore(false);
+    else setLoading(false);
 
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
+    if (result.error) { setError(result.error); return; }
 
     setHasMore(result.hasMore);
     setPage(nextPage);
     setPosts((current) => {
-      if (!append) {
-        return result.data;
-      }
-
+      if (!append) return result.data;
       const seenIds = new Set(current.map((post) => post.id));
-      const nextPosts = result.data.filter((post) => !seenIds.has(post.id));
-      return [...current, ...nextPosts];
+      return [...current, ...result.data.filter((post) => !seenIds.has(post.id))];
     });
   };
 
@@ -99,32 +70,21 @@ export const FeedPage = () => {
 
   useEffect(() => {
     const node = sentinelRef.current;
-
-    if (!node || !hasMore || isLoading || isLoadingMore) {
-      return;
-    }
+    if (!node || !hasMore || isLoading || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-
+      ([entry]) => {
         if (entry?.isIntersecting) {
           void loadFeed({ scope: feedScope, page: page + 1, append: true });
         }
       },
-      {
-        rootMargin: "240px 0px"
-      }
+      { rootMargin: "240px 0px" }
     );
 
     observer.observe(node);
-
     return () => observer.disconnect();
   }, [feedScope, hasMore, isLoading, isLoadingMore, page, user?.id]);
 
-  const activeCreators = new Set(posts.map((post) => post.author_id)).size;
-  const interactionLabel =
-    profile?.role === "creator" ? "Audience-ready creator feed" : "Community feed for visitors";
   const emptyFeedCopy =
     feedScope === "following"
       ? "Follow a few profiles to build a relationship-based feed."
@@ -132,13 +92,14 @@ export const FeedPage = () => {
         ? "Subscribe to creators to unlock a dedicated subscription stream."
         : feedScope === "saved"
           ? "Save posts from the feed to build a private reading list."
-        : profile?.role === "creator"
-          ? "Create the first post right from the feed or publish from your profile studio."
-          : "Once creators publish content, it will appear here.";
+          : profile?.role === "creator"
+            ? "Create the first post below, or publish from your profile studio."
+            : "Once creators publish content, it will appear here.";
 
   return (
     <section className="feed-page">
       <div className="feed-shell">
+        {/* Left sidebar — desktop only */}
         <aside className="feed-sidebar feed-sidebar--left">
           <div className="feed-rail-card">
             <span className="section-heading__eyebrow">Profile</span>
@@ -157,44 +118,27 @@ export const FeedPage = () => {
               </Link>
             </div>
           </div>
-
-          <div className="feed-rail-card">
-            <span className="section-heading__eyebrow">Flow</span>
-            <h2>{profile?.role === "creator" ? "Creator rhythm" : "Visitor rhythm"}</h2>
-            <ul className="feed-rail-list">
-              {(profile?.role === "creator" ? creatorShortcuts : visitorShortcuts).map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
         </aside>
 
+        {/* Main feed column */}
         <div className="feed-main">
-          <header className="feed-hero">
-            <div>
-              <span className="section-heading__eyebrow">Discover Feed</span>
-              <h1>Post and browse from one social surface.</h1>
-              <p>
-                Mobile drives the experience first. On larger screens, sidebars keep navigation and
-                context nearby without breaking the feed flow.
-              </p>
-            </div>
+          {/* Compact tab bar */}
+          <div className="feed-tabs" role="tablist">
+            {feedTabs.map((tab) => (
+              <button
+                aria-selected={feedScope === tab.value}
+                className={`feed-tab${feedScope === tab.value ? " feed-tab--active" : ""}`}
+                key={tab.value}
+                onClick={() => setFeedScope(tab.value)}
+                role="tab"
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-            <div className="feed-chip-row">
-              {feedTabs.map((tab) => (
-                <button
-                  className={`feed-chip ${feedScope === tab.value ? "feed-chip--active" : ""}`}
-                  key={tab.value}
-                  onClick={() => setFeedScope(tab.value)}
-                  type="button"
-                >
-                  {tab.label}
-                </button>
-              ))}
-              <span className="feed-chip">{interactionLabel}</span>
-            </div>
-          </header>
-
+          {/* Creator post composer */}
           {profile?.role === "creator" && user ? (
             <PostComposer
               onPublished={() => loadFeed({ scope: feedScope, page: 0, append: false })}
@@ -206,18 +150,20 @@ export const FeedPage = () => {
           {error ? <div className="auth-message auth-message--error">{error}</div> : null}
 
           {isLoading ? (
-            <div className="dashboard-card">
-              <p>Loading feed...</p>
+            <div className="feed-loading">
+              <div className="feed-loading__dot" />
+              <div className="feed-loading__dot" />
+              <div className="feed-loading__dot" />
             </div>
           ) : null}
 
           {!isLoading && posts.length === 0 ? (
             <div className="empty-feed">
-              <span className="section-heading__eyebrow">No Posts Yet</span>
-              <h2>The feed is empty right now.</h2>
+              <span className="section-heading__eyebrow">Nothing here yet</span>
+              <h2>The feed is empty.</h2>
               <p>{emptyFeedCopy}</p>
               <Link className="solid-button" to="/dashboard">
-                {profile?.role === "creator" ? "Open Profile Studio" : "Open Account"}
+                {profile?.role === "creator" ? "Open Studio" : "Open Account"}
               </Link>
             </div>
           ) : null}
@@ -236,32 +182,21 @@ export const FeedPage = () => {
           {!isLoading && posts.length > 0 ? <div className="feed-sentinel" ref={sentinelRef} /> : null}
 
           {isLoadingMore ? (
-            <div className="feed-load-state">
-              <p>Loading more posts...</p>
-            </div>
-          ) : null}
-
-          {!isLoading && hasMore ? (
-            <div className="feed-load-state">
-              <button
-                className="ghost-button"
-                disabled={isLoadingMore}
-                onClick={() => void loadFeed({ scope: feedScope, page: page + 1, append: true })}
-                type="button"
-              >
-                Load more
-              </button>
+            <div className="feed-loading feed-loading--inline">
+              <div className="feed-loading__dot" />
+              <div className="feed-loading__dot" />
+              <div className="feed-loading__dot" />
             </div>
           ) : null}
 
           {!isLoading && !hasMore && posts.length > 0 ? (
             <div className="feed-end-cap">
-              <span className="section-heading__eyebrow">End of feed</span>
-              <p>You are caught up for this feed tab.</p>
+              <span className="section-heading__eyebrow">You're all caught up</span>
             </div>
           ) : null}
         </div>
 
+        {/* Right sidebar — desktop only */}
         <aside className="feed-sidebar feed-sidebar--right">
           <div className="feed-rail-card">
             <span className="section-heading__eyebrow">Live Summary</span>
@@ -273,40 +208,18 @@ export const FeedPage = () => {
               </article>
               <article>
                 <span>Creators</span>
-                <strong>{activeCreators}</strong>
+                <strong>{new Set(posts.map((p) => p.author_id)).size}</strong>
               </article>
             </div>
-            <p>
-              {feedScope === "for-you"
-                ? "Broad discovery stream."
-                : feedScope === "following"
-                  ? "Only people you follow."
-                  : feedScope === "subscribed"
-                    ? "Only creators you subscribed to."
-                    : "Your private collection of saved posts."}
-            </p>
           </div>
 
           <div className="feed-rail-card">
-            <span className="section-heading__eyebrow">Actions</span>
-            <h2>{profile?.role === "creator" ? "Publish from profile too" : "Jump out of feed"}</h2>
-            <p>
-              {profile?.role === "creator"
-                ? "Your profile studio still has the same publishing tools, so you can post from both feed and profile surfaces."
-                : "Use account and creator profile pages when you want more context than the feed card."}
-            </p>
+            <span className="section-heading__eyebrow">Quick Links</span>
             <div className="feed-rail-actions">
-              <Link className="ghost-button" to="/messages">
-                Messages
-              </Link>
+              <Link className="ghost-button" to="/messages">Messages</Link>
               <Link className="ghost-button" to="/dashboard">
                 {profile?.role === "creator" ? "Profile Studio" : "Account"}
               </Link>
-              {profile?.role === "creator" ? (
-                <Link className="solid-button" to="/dashboard">
-                  Manage Creator Page
-                </Link>
-              ) : null}
             </div>
           </div>
         </aside>

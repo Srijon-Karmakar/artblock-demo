@@ -247,6 +247,7 @@ export const PublicProfilePage = () => {
 
   return (
     <section className="public-page public-page--full">
+      {/* Profile header — Instagram-style on mobile */}
       <div className="public-hero">
         <div className="public-hero__identity">
           {publicProfile.avatar_url ? (
@@ -259,13 +260,13 @@ export const PublicProfilePage = () => {
 
           <div className="public-hero__copy">
             <span className="section-heading__eyebrow">
-              {publicProfile.role === "creator" ? "Creator Profile" : "Member Profile"}
+              {publicProfile.role === "creator" ? "Creator" : "Member"}
             </span>
             <h1>{publicProfile.full_name}</h1>
             <p>
               {publicProfile.headline ??
                 publicProfile.bio ??
-                "This member has not added a profile intro yet."}
+                "No intro added yet."}
             </p>
 
             <div className="public-meta">
@@ -274,29 +275,32 @@ export const PublicProfilePage = () => {
               ))}
               {publicProfile.website ? (
                 <a href={publicProfile.website} rel="noreferrer" target="_blank">
-                  Visit Website
+                  Website ↗
                 </a>
-              ) : null}
-              {publicProfile.creator_slug ? (
-                <Link to={`/creators/${publicProfile.creator_slug}`}>Creator link</Link>
               ) : null}
             </div>
           </div>
         </div>
 
+        {/* Action buttons */}
         <div className="public-profile__actions">
           {isOwnProfile ? (
             <Link className="ghost-button" to="/dashboard">
-              Manage profile
+              Edit profile
             </Link>
           ) : (
             <>
-              <button className="ghost-button" disabled={isMutating} onClick={() => void handleFollow()} type="button">
+              <button
+                className={`ghost-button${relationship.is_following ? " ghost-button--active" : ""}`}
+                disabled={isMutating}
+                onClick={() => void handleFollow()}
+                type="button"
+              >
                 {relationship.is_following ? "Following" : "Follow"}
               </button>
               {publicProfile.role === "creator" ? (
                 <button
-                  className="ghost-button"
+                  className={`ghost-button${relationship.is_subscribed ? " ghost-button--active" : ""}`}
                   disabled={isMutating}
                   onClick={() => void handleSubscribe()}
                   type="button"
@@ -304,7 +308,12 @@ export const PublicProfilePage = () => {
                   {relationship.is_subscribed ? "Subscribed" : "Subscribe"}
                 </button>
               ) : null}
-              <button className="solid-button" disabled={isMutating} onClick={() => void handleMessage()} type="button">
+              <button
+                className="solid-button"
+                disabled={isMutating}
+                onClick={() => void handleMessage()}
+                type="button"
+              >
                 Message
               </button>
             </>
@@ -312,26 +321,23 @@ export const PublicProfilePage = () => {
         </div>
       </div>
 
+      {/* Stats row */}
       <div className="public-grid public-grid--stats">
         <article className="public-card">
-          <span className="section-heading__eyebrow">Reach</span>
+          <span className="section-heading__eyebrow">Followers</span>
           <h2>{publicProfile.follower_count}</h2>
-          <p>Followers</p>
         </article>
         <article className="public-card">
-          <span className="section-heading__eyebrow">Network</span>
+          <span className="section-heading__eyebrow">Following</span>
           <h2>{publicProfile.following_count}</h2>
-          <p>Following</p>
         </article>
         <article className="public-card">
-          <span className="section-heading__eyebrow">Support</span>
+          <span className="section-heading__eyebrow">Subs</span>
           <h2>{publicProfile.subscriber_count}</h2>
-          <p>Subscribers</p>
         </article>
         <article className="public-card">
           <span className="section-heading__eyebrow">Posts</span>
           <h2>{publicProfile.post_count}</h2>
-          <p>Published updates</p>
         </article>
       </div>
 
