@@ -122,7 +122,7 @@ export const CreatorSpotlightSection = ({
 
   return (
     <section
-      className={`creator-spotlight landing-width reveal ${isVisible ? "visible" : ""}`}
+      className={`creator-spotlight reveal ${isVisible ? "visible" : ""}`}
       id="features"
       ref={sectionRef}
     >
@@ -163,7 +163,7 @@ export const CreatorSpotlightSection = ({
           </div>
 
           <div className="creator-spotlight__rail" aria-label="Featured creators">
-            {stackedCreators.map((creator, index) => {
+            {creators.map((creator, index) => {
               const isActive = creator.slug === activeCreator.slug;
 
               return (
