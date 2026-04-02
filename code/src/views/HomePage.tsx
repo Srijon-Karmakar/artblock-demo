@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { CreatorSpotlightSection } from "../components/home/CreatorSpotlightSection";
+import { ImmersionSection } from "../components/home/ImmersionSection";
+import { MomentumSection } from "../components/home/MomentumSection";
+import { SignalConsole } from "../components/home/SignalConsole";
 import { getSupabaseClient } from "../lib/supabase";
 import type { Database } from "../lib/supabase.types";
 import heroVideo1 from "../public/videos/hero-1.mp4";
@@ -82,14 +86,6 @@ const proofItems = [
   "Member-only publishing"
 ];
 
-const marqueeItems = [
-  "Own the audience relationship",
-  "Launch a page that converts on mobile",
-  "Make memberships feel premium",
-  "Publish for the right tier at the right time",
-  "Turn profile traffic into recurring revenue"
-];
-
 const heroSignals = [
   {
     label: "Creators live",
@@ -105,134 +101,6 @@ const heroSignals = [
     label: "Time to publish",
     value: "18 min",
     meta: "From signup to public creator page"
-  }
-];
-
-const commandCards = [
-  {
-    title: "Launch Surface",
-    body:
-      "Profile, positioning, offer, and member value all live in one flow so creators publish with confidence instead of assembling a stack.",
-    accent: "Editorial profile system"
-  },
-  {
-    title: "Member Engine",
-    body:
-      "Subscriptions, private updates, and messaging create a loop that keeps supporters close after the first conversion.",
-    accent: "Recurring relationship design"
-  },
-  {
-    title: "Operator View",
-    body:
-      "Signals, publishing controls, and roadmap-ready workflows make the product feel like a serious business tool, not just a profile page.",
-    accent: "Built to scale with creators"
-  }
-];
-
-const journeyStages = [
-  {
-    step: "01",
-    title: "Position the creator",
-    body: "Lead with voice, category, and why this work matters before you ever ask for payment."
-  },
-  {
-    step: "02",
-    title: "Present the offer",
-    body: "Turn support into a clear membership proposition with tiers, access, and premium framing."
-  },
-  {
-    step: "03",
-    title: "Keep the loop warm",
-    body: "Use member-only publishing and direct touchpoints to make retention feel natural, not forced."
-  }
-];
-
-const featureRows = [
-  {
-    eyebrow: "Create on your terms",
-    title: "Give creators a home that feels owned, not rented.",
-    body:
-      "ArtBlock centers the creator page first: warm editorial presentation, clear membership offers, and publishing surfaces built around direct fan support.",
-    points: [
-      "Public profile and tier stack",
-      "Long-form creator storytelling",
-      "Clean mobile conversion path"
-    ]
-  },
-  {
-    eyebrow: "Build real community",
-    title: "Move people from audience to membership.",
-    body:
-      "The product language is about belonging, access, and recurring support. Fans should feel like insiders, not just customers checking out a paywall.",
-    points: [
-      "Posts layered by access",
-      "Persistent member identity",
-      "Room for DMs, drops, and notifications next"
-    ]
-  },
-  {
-    eyebrow: "Grow into a business",
-    title: "Treat memberships like a serious creator revenue stream.",
-    body:
-      "This foundation already uses real auth, creator records, and Postgres-backed data so the rest of the platform can grow without reworking the basics later.",
-    points: [
-      "Supabase-backed creator data",
-      "Role-aware auth and redirects",
-      "Ready for subscriptions and publishing CRUD"
-    ]
-  }
-];
-
-const pricingPlans = [
-  {
-    name: "Starter",
-    price: "Free",
-    period: "",
-    description:
-      "Launch your creative presence and start building an audience with no upfront cost.",
-    highlight: false,
-    cta: "Get started free",
-    features: [
-      "1 membership tier",
-      "Public creator page",
-      "Up to 50 members",
-      "8% platform fee",
-      "Community support"
-    ]
-  },
-  {
-    name: "Creator",
-    price: "$15",
-    period: "/month",
-    description:
-      "For creators ready to build a serious membership business and grow their fanbase.",
-    highlight: true,
-    cta: "Start Creator plan",
-    features: [
-      "Up to 5 membership tiers",
-      "Analytics dashboard",
-      "Priority support",
-      "5% platform fee",
-      "Custom branding",
-      "Patron messaging"
-    ]
-  },
-  {
-    name: "Pro",
-    price: "$35",
-    period: "/month",
-    description:
-      "For professional creators with a dedicated fanbase and serious revenue goals.",
-    highlight: false,
-    cta: "Go Pro",
-    features: [
-      "Unlimited membership tiers",
-      "Advanced analytics",
-      "Dedicated account support",
-      "3% platform fee",
-      "Custom domain + branding",
-      "Early feature access"
-    ]
   }
 ];
 
@@ -366,7 +234,6 @@ const loadFeaturedCreators = async () => {
 export const HomePage = () => {
   const [creators, setCreators] = useState<FeaturedCreator[]>(fallbackCreators);
   const [isLoading, setIsLoading] = useState(true);
-  const parallaxRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const videoARef = useRef<HTMLVideoElement>(null);
   const videoBRef = useRef<HTMLVideoElement>(null);
@@ -642,15 +509,11 @@ export const HomePage = () => {
     let cancelled = false;
 
     const loadCreators = async () => {
-      try {
-        const items = await loadFeaturedCreators();
-        if (!cancelled) {
-          setCreators(items);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+      setIsLoading(true);
+      const items = await loadFeaturedCreators();
+      if (!cancelled) {
+        setCreators(items);
+        setIsLoading(false);
       }
     };
 
@@ -669,25 +532,9 @@ export const HomePage = () => {
 
     document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
 
-    const handleScroll = () => {
-      if (!parallaxRef.current) {
-        return;
-      }
-
-      const rect = parallaxRef.current.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
-        parallaxRef.current.style.setProperty("--parallax-y", `${progress * 88}px`);
-      }
-    };
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       cancelled = true;
       observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -740,11 +587,13 @@ export const HomePage = () => {
             </p>
 
             <div className="hero-actions-centered">
-              <Link className="button-rust-large" to="/signup">
-                Start your page
+              <Link className="button-rust-large hero-cta-primary" to="/signup">
+                <span className="hero-cta-primary__title">Start your page</span>
+                <span className="hero-cta-primary__meta">Free setup. Publish in minutes.</span>
               </Link>
-              <Link className="button-ghost-large" to={featuredCreatorHref}>
-                Explore creators
+              <Link className="button-ghost-large hero-cta-secondary" to={featuredCreatorHref}>
+                <span className="hero-cta-secondary__title">Explore creators</span>
+                <span className="hero-cta-secondary__meta">See live pages before you launch</span>
               </Link>
             </div>
           </div>
@@ -778,222 +627,13 @@ export const HomePage = () => {
         </p>
       </section>
 
-      <section className="signal-marquee" aria-label="ArtBlock product highlights">
-        <div className="signal-marquee__track">
-          {[...marqueeItems, ...marqueeItems].map((item, index) => (
-            <span className="signal-marquee__item" key={`${item}-${index}`}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </section>
+      <MomentumSection />
 
-      <div className="parallax-bridge" ref={parallaxRef}>
-        <div className="parallax-inner landing-width">
-          <p className="parallax-eyebrow">Why ArtBlock</p>
-          <h2 className="parallax-headline">
-            Where creativity meets
-            <br />
-            real community.
-          </h2>
-        </div>
-      </div>
+      <CreatorSpotlightSection creators={creators} isLoading={isLoading} />
 
-      <section className="editorial-band panel landing-width" id="about">
-        <div>
-          <span className="eyebrow">Why it feels better</span>
-          <h2>Less dashboard chrome. More story, trust, and conversion.</h2>
-        </div>
-        <p>
-          The strongest creator platforms do not feel like enterprise SaaS first. They feel
-          like a polished home for people, work, and fandom. ArtBlock pushes in that
-          direction.
-        </p>
-      </section>
+      <SignalConsole />
 
-      <section className="command-center landing-width reveal">
-        <article className="command-center__board panel">
-          <div className="command-center__header">
-            <div>
-              <span className="eyebrow">Experience system</span>
-              <h2>Designed like a premium product, not a generic creator template.</h2>
-            </div>
-            <p>
-              The UX should feel coordinated across discovery, membership conversion, and
-              ongoing publishing. This is the operating system behind that feeling.
-            </p>
-          </div>
-
-          <div className="journey-timeline">
-            {journeyStages.map((stage) => (
-              <article className="journey-stage" key={stage.step}>
-                <span className="journey-stage__step">{stage.step}</span>
-                <div>
-                  <h3>{stage.title}</h3>
-                  <p>{stage.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </article>
-
-        <div className="command-center__stack">
-          {commandCards.map((card) => (
-            <article className="command-card panel" key={card.title}>
-              <span className="command-card__accent">{card.accent}</span>
-              <h3>{card.title}</h3>
-              <p>{card.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="creator-showcase landing-width" id="features">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Discover creators</span>
-            <h2>Live creator cards with stronger editorial presentation</h2>
-          </div>
-          <p className="section-note">
-            Featured profiles are pulled from the live creator dataset when available.
-          </p>
-        </div>
-
-        {isLoading ? (
-          <div className="bento-grid">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <article
-                className={`bento-item card creator-card-skeleton ${
-                  index === 0 ? "bento-item-large" : ""
-                }`}
-                key={`skeleton-${index}`}
-              >
-                <div className="skeleton-line skeleton-small" />
-                <div className="skeleton-line skeleton-large" />
-                <div className="skeleton-line" />
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="bento-grid">
-            {creators.map((creator, index) => (
-              <article
-                className={`bento-item card creator-card reveal ${
-                  index === 0 ? "bento-item-large" : index === 1 ? "bento-item-tall" : ""
-                }`}
-                key={creator.slug}
-              >
-                <div className="creator-card-top">
-                  <span className="creator-category">{creator.category}</span>
-                  <span className="creator-supporters">
-                    {formatSupporters(creator.monthlySupporters)}
-                  </span>
-                </div>
-
-                <div className="creator-card-identity">
-                  <span className="creator-avatar">{creator.initials}</span>
-                  <div className="creator-card-info">
-                    <h3>{creator.displayName}</h3>
-                    <p>{creator.headline}</p>
-                  </div>
-                </div>
-
-                <div className="creator-card-bottom">
-                  <div className="stack-list">
-                    <span>From ${creator.startingPrice}/month</span>
-                  </div>
-                  <Link className="text-link" to={`/creators/${creator.slug}`}>
-                    View profile
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="pricing-section reveal landing-width" id="pricing">
-        <div className="pricing-header">
-          <span className="eyebrow">Simple pricing</span>
-          <h2>Grow with a plan that fits</h2>
-          <p>Start free. Upgrade when you are ready. No hidden fees, no surprises.</p>
-        </div>
-
-        <div className="pricing-grid">
-          {pricingPlans.map((plan) => (
-            <article
-              className={`pricing-card ${plan.highlight ? "pricing-card-featured" : ""}`}
-              key={plan.name}
-            >
-              {plan.highlight ? <span className="pricing-badge">Most popular</span> : null}
-              <h3>{plan.name}</h3>
-              <div className="pricing-price">
-                <span className="pricing-amount">{plan.price}</span>
-                <span className="pricing-period">{plan.period}</span>
-              </div>
-              <p>{plan.description}</p>
-              <ul className="pricing-features">
-                {plan.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-              <Link className={plan.highlight ? "button-rust-full" : "button-outline-teal"} to="/signup">
-                {plan.cta}
-              </Link>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="feature-columns landing-width">
-        {featureRows.map((feature) => (
-          <article className="feature-panel panel reveal" key={feature.title}>
-            <span className="eyebrow">{feature.eyebrow}</span>
-            <h2>{feature.title}</h2>
-            <p>{feature.body}</p>
-            <ul className="clean-list">
-              {feature.points.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </section>
-
-      <section className="quote-panel panel landing-width">
-        <div className="quote-mark">&ldquo;</div>
-        <div>
-          <p className="quote-copy">
-            A creator platform should make the relationship feel direct, premium, and alive.
-            That means less template energy and more confidence in the page, copy, and
-            membership offer.
-          </p>
-          <p className="quote-author">ArtBlock product direction</p>
-        </div>
-      </section>
-
-      <section className="cta-panel panel landing-width" id="cta">
-        <div>
-          <span className="eyebrow">Next step</span>
-          <h2>Ready to build something your audience will actually support?</h2>
-        </div>
-        <div className="hero-actions">
-          <Link className="button button-primary" to="/signup">
-            Create your account
-          </Link>
-          <Link className="button button-secondary" to="/login">
-            Log in
-          </Link>
-        </div>
-      </section>
+      <ImmersionSection />
     </div>
   );
 };
-
-function formatSupporters(value: number) {
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}k supporters`;
-  }
-
-  return `${value} supporters`;
-}
