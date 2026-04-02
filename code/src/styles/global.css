@@ -109,6 +109,10 @@ img {
   -webkit-backdrop-filter: blur(14px);
 }
 
+.site-header__surface--menu-open {
+  overflow: visible;
+}
+
 .site-header__left {
   display: flex;
   align-items: center;
@@ -177,6 +181,7 @@ img {
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+  z-index: 20;
 }
 
 .site-nav--open {
@@ -190,6 +195,21 @@ img {
   min-height: 2.6rem;
   padding: 0.4rem 0.2rem;
   color: var(--copy-muted);
+}
+
+.site-nav__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--brand-accent);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .site-nav__badge,
@@ -3406,7 +3426,7 @@ img {
   --immersion-phase-two: 0;
   position: relative;
   width: 100%;
-  height: 220svh;
+  height: 290svh;
 }
 
 .immersion-stage__sticky {
@@ -3905,18 +3925,19 @@ img {
 
 .creator-spotlight {
   display: grid;
-  gap: 2rem;
+  gap: 1rem;
   width: 100%;
-  padding-inline: clamp(1rem, 6vw, 8rem);
-  margin-top: 2rem;
+  padding-inline: 0;
+  margin-top: 1.2rem;
 }
 
 .creator-spotlight__header {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 2.4rem;
-  align-items: end;
-  margin-bottom: 1.2rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  padding-inline: 1rem;
+  margin-bottom: 0;
 }
 
 .creator-spotlight__stage {
@@ -3926,10 +3947,12 @@ img {
   isolation: isolate;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(18rem, 22rem) 1fr minmax(14rem, 18rem);
-  gap: 2.2rem;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
   min-height: 100svh;
-  padding: clamp(2rem, 5vw, 4.5rem);
+  padding: 1rem 1rem 1.4rem;
   border-radius: 0;
   border: 0;
   background:
@@ -3997,11 +4020,18 @@ img {
   gap: 0.85rem;
 }
 
+.creator-spotlight__skeleton {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: 1rem;
+}
+
 .creator-spotlight__selector {
   display: grid;
   gap: 0.18rem;
   justify-items: start;
-  padding: 1rem 1.05rem;
+  min-width: min(16rem, 78vw);
+  padding: 0.95rem 1rem;
   border-radius: 1.25rem;
   border: 1px solid rgba(255, 244, 236, 0.12);
   background: rgba(15, 12, 10, 0.3);
@@ -4043,8 +4073,8 @@ img {
   display: grid;
   gap: 1.2rem;
   align-content: end;
-  min-height: 28rem;
-  padding: 1.35rem;
+  min-height: 35rem;
+  padding: 1.1rem;
   border-radius: 1.7rem;
   background:
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 18rem),
@@ -4085,9 +4115,9 @@ img {
 .creator-spotlight__hero::before {
   content: "";
   position: absolute;
-  top: 12%;
-  right: 6%;
-  width: min(44vw, 19rem);
+  top: 8%;
+  right: -10%;
+  width: min(70vw, 16rem);
   aspect-ratio: 1;
   border-radius: 34% 66% 61% 39% / 41% 38% 62% 59%;
   background: var(--creator-aura);
@@ -4098,8 +4128,8 @@ img {
 .creator-spotlight__hero::after {
   content: "";
   position: absolute;
-  inset: auto 6% 15% auto;
-  width: min(34vw, 13rem);
+  inset: auto 0.9rem 7rem auto;
+  width: min(42vw, 10rem);
   aspect-ratio: 1;
   border-radius: 50%;
   border: 1px solid rgba(255, 244, 236, 0.18);
@@ -4118,11 +4148,11 @@ img {
 
 .creator-spotlight__monogram {
   position: absolute;
-  right: clamp(0.8rem, 3vw, 2rem);
-  bottom: 1rem;
+  right: 0.4rem;
+  bottom: 0.5rem;
   color: rgba(255, 248, 243, 0.09);
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  font-size: clamp(7rem, 24vw, 18rem);
+  font-size: clamp(5rem, 32vw, 8.5rem);
   font-weight: 700;
   line-height: 0.8;
   letter-spacing: -0.09em;
@@ -4132,21 +4162,21 @@ img {
 .creator-spotlight__identity {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.95rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .creator-spotlight__avatar {
   display: grid;
   place-items: center;
-  width: 4.25rem;
-  height: 4.25rem;
-  border-radius: 1.25rem;
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 1rem;
   border: 1px solid rgba(255, 244, 236, 0.18);
   background: rgba(255, 250, 246, 0.16);
   color: #fff7f2;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 800;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -4175,7 +4205,7 @@ img {
 }
 
 .creator-spotlight__identity h3 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: clamp(1.45rem, 5vw, 2.2rem);
   line-height: 0.94;
 }
 
@@ -4183,7 +4213,7 @@ img {
   position: relative;
   display: grid;
   gap: 0.65rem;
-  max-width: 34rem;
+  max-width: none;
 }
 
 .creator-spotlight__kicker {
@@ -4191,8 +4221,8 @@ img {
 }
 
 .creator-spotlight__title-block h4 {
-  font-size: clamp(2.3rem, 7vw, 5.2rem);
-  line-height: 0.9;
+  font-size: clamp(2.8rem, 16vw, 5.2rem);
+  line-height: 0.88;
   letter-spacing: -0.07em;
   text-wrap: balance;
 }
@@ -4223,7 +4253,7 @@ img {
   align-items: center;
   justify-content: center;
   min-height: 3.3rem;
-  width: fit-content;
+  width: 100%;
   padding: 0.9rem 1.3rem;
   border-radius: 999px;
   color: #18110f;
@@ -4236,8 +4266,8 @@ img {
   display: grid;
   gap: 0.35rem;
   align-content: end;
-  min-height: 8.5rem;
-  padding: 1rem;
+  min-height: 7.25rem;
+  padding: 0.95rem;
   border-radius: 1.35rem;
   border: 1px solid rgba(255, 244, 236, 0.14);
   background: rgba(15, 12, 10, 0.3);
@@ -4274,6 +4304,32 @@ img {
   border: 1px solid rgba(25, 19, 17, 0.08);
   background:
     linear-gradient(180deg, rgba(255, 252, 249, 0.98), rgba(250, 243, 237, 0.95));
+}
+
+.creator-spotlight__rail {
+  order: 2;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.creator-spotlight__rail::-webkit-scrollbar,
+.creator-spotlight__echoes::-webkit-scrollbar {
+  display: none;
+}
+
+.creator-spotlight__hero {
+  order: 1;
+}
+
+.creator-spotlight__echoes {
+  order: 3;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(9.5rem, 42vw);
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
 }
 
 .bento-grid,
@@ -4614,25 +4670,36 @@ img {
     padding: 5.35rem 0 2.35rem;
   }
 
+  .creator-spotlight__header {
+    padding-inline: clamp(1.5rem, 4vw, 2rem);
+  }
+
   .creator-spotlight__stage {
-    grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
-    padding: 1.45rem;
+    gap: 1.4rem;
+    padding: 1.45rem clamp(1.5rem, 4vw, 2rem) 1.75rem;
   }
 
   .creator-spotlight__hero {
-    min-height: 32rem;
+    min-height: 40rem;
     padding: 1.55rem;
   }
 
+  .creator-spotlight__rail {
+    gap: 1rem;
+  }
+
   .creator-spotlight__echoes {
-    grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-columns: minmax(0, 1fr);
+    overflow-x: visible;
   }
 
   .creator-spotlight__skeleton {
-    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.75fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
+    padding: 1.45rem clamp(1.5rem, 4vw, 2rem);
   }
 
   .signal-console__tabs {
@@ -4714,7 +4781,7 @@ img {
   }
 
   .immersion-stage {
-    height: 240svh;
+    height: 330svh;
   }
 
   .immersion-field {
@@ -4776,27 +4843,61 @@ img {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .creator-spotlight__header {
+    grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+    gap: 2rem;
+    align-items: end;
+    padding-inline: clamp(2rem, 5vw, 4rem);
+  }
+
   .creator-spotlight__stage {
     grid-template-columns: minmax(14rem, 15rem) minmax(0, 1.28fr) minmax(13rem, 0.72fr);
     min-height: 46rem;
+    gap: 2rem;
+    padding: clamp(2rem, 5vw, 4rem);
   }
 
   .creator-spotlight__rail {
+    order: 0;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    overflow: visible;
     align-content: start;
     padding-top: 0.35rem;
+    padding-bottom: 0;
   }
 
   .creator-spotlight__hero {
+    order: 0;
     min-height: 100%;
   }
 
   .creator-spotlight__echoes {
+    order: 0;
     grid-column: auto;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    overflow: visible;
     align-content: end;
+    padding-bottom: 0;
+  }
+
+  .creator-spotlight__selector {
+    min-width: 0;
+  }
+
+  .creator-spotlight__cta {
+    width: fit-content;
+  }
+
+  .creator-spotlight__monogram {
+    right: clamp(0.8rem, 3vw, 2rem);
+    bottom: 1rem;
+    font-size: clamp(7rem, 24vw, 18rem);
   }
 
   .immersion-stage {
-    height: 260svh;
+    height: 360svh;
   }
 
   .bento-grid {
@@ -4820,11 +4921,17 @@ img {
 
 @media (min-width: 900px) {
   .creator-showcase .section-heading,
-  .creator-spotlight__header,
   .pricing-header {
     display: flex;
     align-items: end;
     justify-content: space-between;
+  }
+
+  .creator-spotlight__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+    align-items: end;
+    justify-content: stretch;
   }
 
   .signal-console__header,

@@ -88,15 +88,18 @@ export const ImmersionSection = () => {
     }
 
     let frame = 0;
+    let currentProgress = 0;
+    let targetProgress = 0;
+    const easeInOutCubic = (value: number) =>
+      value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
+    const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
 
-    const updateProgress = () => {
-      frame = 0;
-      const rect = section.getBoundingClientRect();
-      const travel = Math.max(rect.height - window.innerHeight, 1);
-      const progress = Math.min(Math.max(-rect.top / travel, 0), 1);
-      const phaseOne = Math.min(Math.max((progress - 0.12) / 0.34, 0), 1);
-      const phaseTwo = Math.min(Math.max((progress - 0.56) / 0.26, 0), 1);
-      const contentScene = phaseTwo >= 0.4 ? "second" : phaseOne >= 0.4 ? "first" : "base";
+    const applyState = (progress: number) => {
+      const phaseOneRaw = clamp((progress - 0.2) / 0.58);
+      const phaseTwoRaw = clamp((progress - 0.74) / 0.34);
+      const phaseOne = easeInOutCubic(phaseOneRaw);
+      const phaseTwo = easeInOutCubic(phaseTwoRaw);
+      const contentScene = phaseTwoRaw >= 0.68 ? "second" : phaseOneRaw >= 0.64 ? "first" : "base";
       const baseContent = contentScene === "base" ? 1 : 0;
       const firstContent = contentScene === "first" ? 1 : 0;
       const secondContent = contentScene === "second" ? 1 : 0;
@@ -109,15 +112,41 @@ export const ImmersionSection = () => {
       section.style.setProperty("--immersion-content-second", secondContent.toFixed(4));
     };
 
-    const scheduleUpdate = () => {
-      if (frame !== 0) {
+    const readTarget = () => {
+      const rect = section.getBoundingClientRect();
+      const travel = Math.max(rect.height - window.innerHeight, 1);
+      targetProgress = clamp(-rect.top / travel);
+    };
+
+    const animate = () => {
+      const delta = targetProgress - currentProgress;
+      currentProgress += delta * 0.085;
+
+      if (Math.abs(delta) < 0.0012) {
+        currentProgress = targetProgress;
+      }
+
+      applyState(currentProgress);
+
+      if (Math.abs(targetProgress - currentProgress) >= 0.0012) {
+        frame = window.requestAnimationFrame(animate);
         return;
       }
 
-      frame = window.requestAnimationFrame(updateProgress);
+      frame = 0;
     };
 
-    updateProgress();
+    const scheduleUpdate = () => {
+      readTarget();
+
+      if (frame === 0) {
+        frame = window.requestAnimationFrame(animate);
+      }
+    };
+
+    readTarget();
+    currentProgress = targetProgress;
+    applyState(currentProgress);
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate);
 

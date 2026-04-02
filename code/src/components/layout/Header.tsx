@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import {
+  fetchUnreadMessageCount,
+  fetchUnreadNotificationsCount
+} from "../../lib/profile";
+import { getSupabaseClient } from "../../lib/supabase";
 import { useAuth } from "../../providers/AuthProvider";
 import logo from "../../public/logo/logo.png";
 
@@ -11,6 +16,8 @@ const marketingAnchorLinks = [
 export const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isLandingScrolled, setLandingScrolled] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const { status, profile, signOut, user } = useAuth();
   const location = useLocation();
   const homeTarget = status === "authenticated" ? "/feed" : "/";
@@ -35,6 +42,50 @@ export const Header = () => {
     };
   }, [isLanding]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+
+    if (!supabase || !user?.id || !isAuthed) {
+      setUnreadMessages(0);
+      setUnreadNotifications(0);
+      return;
+    }
+
+    const refresh = async () => {
+      const [msgResult, notifResult] = await Promise.all([
+        fetchUnreadMessageCount(user.id),
+        fetchUnreadNotificationsCount(user.id)
+      ]);
+
+      if (!msgResult.error) setUnreadMessages(msgResult.data);
+      if (!notifResult.error) setUnreadNotifications(notifResult.data);
+    };
+
+    void refresh();
+
+    const channel = supabase
+      .channel(`header-unread-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "direct_thread_members", filter: `user_id=eq.${user.id}` },
+        () => void refresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${user.id}` },
+        () => void refresh()
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [isAuthed, user?.id]);
+
   const initials = profile?.full_name
     ? profile.full_name
         .split(" ")
@@ -52,7 +103,7 @@ export const Header = () => {
         isLanding && isLandingScrolled ? " site-header--landing-scrolled" : ""
       }`}
     >
-      <div className="site-header__surface">
+      <div className={`site-header__surface${isMenuOpen ? " site-header__surface--menu-open" : ""}`}>
         <div className="site-header__left">
           <Link className="brand-mark" to={homeTarget}>
             <img alt="ArtBlock" className="brand-mark__image" src={logo} />
@@ -111,6 +162,11 @@ export const Header = () => {
               to="/notifications"
             >
               Notifications
+              {unreadNotifications > 0 ? (
+                <span className="site-nav__count">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </span>
+              ) : null}
             </NavLink>
             <NavLink
               className={({ isActive }) =>
@@ -119,6 +175,11 @@ export const Header = () => {
               to="/messages"
             >
               Messages
+              {unreadMessages > 0 ? (
+                <span className="site-nav__count">
+                  {unreadMessages > 99 ? "99+" : unreadMessages}
+                </span>
+              ) : null}
             </NavLink>
             <NavLink
               className={({ isActive }) =>

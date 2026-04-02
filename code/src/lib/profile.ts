@@ -463,7 +463,8 @@ export const fetchUnreadNotificationsCount = async (userId: string) => {
     .from("notifications")
     .select("*", { count: "exact", head: true })
     .eq("recipient_id", userId)
-    .eq("is_read", false);
+    .eq("is_read", false)
+    .neq("type", "new_message");
 
   return {
     data: Number(count ?? 0),
