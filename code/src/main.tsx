@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./providers/AuthProvider";
 import { router } from "./router";
 import "./styles/global.css";
+import "./styles/dark-theme.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
