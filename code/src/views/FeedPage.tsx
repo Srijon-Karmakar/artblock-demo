@@ -15,6 +15,26 @@ const feedTabs: { label: string; value: FeedScope }[] = [
 
 const FEED_PAGE_SIZE = 6;
 
+const FeedSkeleton = () => (
+  <div className="feed-skeleton">
+    {[1, 2, 3].map((i) => (
+      <div className="feed-skeleton__card" key={i}>
+        <div className="feed-skeleton__header">
+          <div className="feed-skeleton__avatar shimmer" />
+          <div className="feed-skeleton__lines">
+            <div className="feed-skeleton__line shimmer" style={{ width: "55%" }} />
+            <div className="feed-skeleton__line shimmer" style={{ width: "35%" }} />
+          </div>
+        </div>
+        <div className="feed-skeleton__media shimmer" />
+        <div className="feed-skeleton__footer">
+          <div className="feed-skeleton__line shimmer" style={{ width: "30%" }} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export const FeedPage = () => {
   const { profile, user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -149,16 +169,18 @@ export const FeedPage = () => {
 
           {error ? <div className="auth-message auth-message--error">{error}</div> : null}
 
-          {isLoading ? (
-            <div className="feed-loading">
-              <div className="feed-loading__dot" />
-              <div className="feed-loading__dot" />
-              <div className="feed-loading__dot" />
-            </div>
-          ) : null}
+          {isLoading ? <FeedSkeleton /> : null}
 
           {!isLoading && posts.length === 0 ? (
             <div className="empty-feed">
+              <div className="empty-feed__icon" aria-hidden="true">
+                <svg fill="none" height="40" viewBox="0 0 24 24" width="40">
+                  <rect height="18" rx="3" stroke="currentColor" strokeWidth="1.5" width="15" x="4.5" y="3" />
+                  <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="8" x2="16" y1="8" y2="8" />
+                  <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="8" x2="14" y1="12" y2="12" />
+                  <line stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" x1="8" x2="12" y1="16" y2="16" />
+                </svg>
+              </div>
               <span className="section-heading__eyebrow">Nothing here yet</span>
               <h2>The feed is empty.</h2>
               <p>{emptyFeedCopy}</p>
@@ -191,7 +213,9 @@ export const FeedPage = () => {
 
           {!isLoading && !hasMore && posts.length > 0 ? (
             <div className="feed-end-cap">
+              <span>·</span>
               <span className="section-heading__eyebrow">You're all caught up</span>
+              <span>·</span>
             </div>
           ) : null}
         </div>
